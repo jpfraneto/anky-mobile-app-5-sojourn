@@ -1,6 +1,6 @@
 {
   "name": "anky",
-  "main": "entrypoint.js",
+  "main": "main.js",
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",

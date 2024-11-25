@@ -29,16 +29,14 @@ import {
   updateWritingSessionOnLocalStorageSimple,
 } from "@/utils/simple_writing_game";
 
-import {
-  sendWritingSessionConversationToAnky,
-  updateAllUserWrittenAnkysOnLocalStorage,
-} from "@/utils/anky";
+import { updateAllUserWrittenAnkysOnLocalStorage } from "@/utils/anky";
 import WritingGameModal from "./WritingGameModal";
 import {
   EXPO_PUBLIC_SESSION_TARGET_TIME,
   EXPO_PUBLIC_TIME_BETWEEN_KEYSTROKES,
 } from "@/utils/environment";
 import { getLocales } from "expo-localization";
+import { sendWritingConversationToAnky } from "@/api/anky";
 
 const { height } = Dimensions.get("window");
 
@@ -81,14 +79,15 @@ const WritingGame = () => {
 
   const [ankyPromptStreaming, setAnkyPromptStreaming] = useState<string>("");
   const [text, setText] = useState("");
-  const [ankyResponses, setAnkyResponses] = useState<string[]>([]);
   const [newAnkyPrompt, setNewAnkyPrompt] = useState<string | null>(null);
 
   const [deviceLanguage, setDeviceLanguage] = useState<string>("en");
 
   // Writing game elements
   const [keystrokes, setKeystrokes] = useState<string>("");
+  const [sessionBecameAnky, setSessionBecameAnky] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [changeBackgroundColor, setChangeBackgroundColor] = useState(false);
   const [ankyResponseReady, setAnkyResponseReady] = useState(false);
   const [timeSinceLastKeystroke, setTimeSinceLastKeystroke] = useState(0);
   const [writingSessionId, setWritingSessionId] = useState<string>("");
@@ -109,7 +108,7 @@ const WritingGame = () => {
 
   const CHAR_DELAY = 33;
   const TIMEOUT_DURATION = EXPO_PUBLIC_TIME_BETWEEN_KEYSTROKES;
-  const MAX_SESSION_DURATION = EXPO_PUBLIC_SESSION_TARGET_TIME;
+  const TARGET_SESSION_DURATION = EXPO_PUBLIC_SESSION_TARGET_TIME;
 
   useEffect(() => {
     resetAllWritingGameState();
@@ -183,15 +182,74 @@ const WritingGame = () => {
     }
   }, [preparingWritingSession]);
 
+  const handleScreenTap = async () => {
+    if (!writingSession) {
+      const session_id = uuid.v4();
+
+      Vibration.vibrate(100);
+      setWritingSession({
+        session_id: session_id,
+        status: "writing",
+        starting_timestamp: new Date(),
+      } as WritingSession);
+      setTimeout(() => {
+        openWritingGameInSessionModal(
+          new Date().getTime() - sessionStartTime.current!
+        );
+      }, 10 * 1000);
+      setTimeout(() => {
+        openWritingGameInSessionModal(
+          new Date().getTime() - sessionStartTime.current!
+        );
+      }, 4 * 60 * 1000);
+      setTimeout(() => {
+        openWritingGameInSessionModal(
+          new Date().getTime() - sessionStartTime.current!
+        );
+      }, 6 * 60 * 1000);
+      setPreparingWritingSession(false);
+      setAnkyResponseReady(false);
+      setIsUserWriting(true);
+      let prompt =
+        (await AsyncStorage.getItem("upcoming_prompt")) ??
+        t("self-inquiry:upcoming_prompt", {
+          defaultValue: "tell me who you are",
+        });
+      const now = new Date();
+      let newSessionLongString = `${
+        ankyUser?.id
+      }\n${session_id}\n${prompt}\n${now.getTime()}\n`;
+      setSessionLongString(newSessionLongString);
+      await addWritingSessionToLocalStorageSimple(session_id);
+      await updateWritingSessionOnLocalStorageSimple(
+        session_id,
+        sessionLongString
+      );
+      setWritingSessionId(session_id);
+
+      sessionStartTime.current = now.getTime();
+      lastKeystrokeTime.current = now.getTime();
+      setTimeSinceLastKeystroke(0);
+
+      if (Platform.OS === "ios" || Platform.OS === "android") {
+        Keyboard.dismiss();
+        setTimeout(() => {
+          textInputRef.current?.focus();
+        }, 100);
+      } else {
+        textInputRef.current?.focus();
+      }
+    }
+  };
+
   const handleSessionEnded = async () => {
     try {
-      setIsUserWriting(false);
-      // setDidUserWriteToday(true);
-      prettyLog(sessionLongString, "THE WRITING SESSION LONG STRING IS");
-
       if (keystrokeQueue.current.length > 0) {
         await processKeystrokeQueue();
       }
+      setIsUserWriting(false);
+      // setDidUserWriteToday(true);
+      prettyLog(sessionLongString, "THE WRITING SESSION LONG STRING IS");
 
       setWritingSession({
         ...writingSession,
@@ -203,9 +261,7 @@ const WritingGame = () => {
         new Date(writingSession?.starting_timestamp!).getTime();
       prettyLog(elapsedTime, "THE ELAPSED TIME IS");
 
-      if (elapsedTime > MAX_SESSION_DURATION) {
-        setDidUserWriteToday(true);
-        console.log("this means that the anky is ready");
+      if (elapsedTime > TARGET_SESSION_DURATION) {
         setWritingSession({
           ...writingSession,
           status: "completed",
@@ -218,11 +274,12 @@ const WritingGame = () => {
       }
       const newConversation = [...conversationWithAnky, sessionLongString];
       setConversationWithAnky(newConversation);
-      const anky_new_prompt = await sendWritingSessionConversationToAnky(
+      const anky_new_prompt = await sendWritingConversationToAnky(
         newConversation
       );
       console.log("setting the async storage with the new prompt");
       AsyncStorage.setItem("upcoming_prompt", anky_new_prompt);
+      setChangeBackgroundColor(true);
     } catch (error) {
       console.error("Error in handleSessionEnded:", error);
       throw error;
@@ -257,70 +314,6 @@ const WritingGame = () => {
     }
   };
 
-  const handleScreenTap = async () => {
-    Vibration.vibrate(100);
-    setWritingSession({
-      ...writingSession,
-      status: "writing",
-      starting_timestamp: new Date(),
-    } as WritingSession);
-    setTimeout(() => {
-      openWritingGameInSessionModal(
-        new Date().getTime() - sessionStartTime.current!
-      );
-    }, 10 * 1000);
-    setTimeout(() => {
-      openWritingGameInSessionModal(
-        new Date().getTime() - sessionStartTime.current!
-      );
-    }, 4 * 60 * 1000);
-    setTimeout(() => {
-      openWritingGameInSessionModal(
-        new Date().getTime() - sessionStartTime.current!
-      );
-    }, 6 * 60 * 1000);
-    setPreparingWritingSession(false);
-    setAnkyResponseReady(false);
-    if (!writingSession) {
-      // this means the writing session is starting
-      setIsUserWriting(true);
-      let prompt =
-        (await AsyncStorage.getItem("upcoming_prompt")) ??
-        t("self-inquiry:upcoming_prompt", {
-          defaultValue: "tell me who you are",
-        });
-      const session_id = uuid.v4();
-      const now = new Date();
-      let newSessionLongString = `${
-        ankyUser?.id
-      }\n${session_id}\n${prompt}\n${now.getTime()}\n`;
-      setSessionLongString(newSessionLongString);
-      await addWritingSessionToLocalStorageSimple(session_id);
-      await updateWritingSessionOnLocalStorageSimple(
-        session_id,
-        sessionLongString
-      );
-      setWritingSessionId(session_id);
-
-      sessionStartTime.current = now.getTime();
-      lastKeystrokeTime.current = now.getTime();
-      setTimeSinceLastKeystroke(0);
-      setWritingSession({
-        session_id: session_id,
-        starting_timestamp: now,
-        status: "writing",
-      } as WritingSession);
-      if (Platform.OS === "ios" || Platform.OS === "android") {
-        Keyboard.dismiss();
-        setTimeout(() => {
-          textInputRef.current?.focus();
-        }, 100);
-      } else {
-        textInputRef.current?.focus();
-      }
-    }
-  };
-
   const handleKeyPress = (e: any) => {
     const currentTime = Date.now();
     setTimeSinceLastKeystroke(0);
@@ -346,7 +339,6 @@ const WritingGame = () => {
     setText("");
     setSessionLongString("");
     setAnkyPromptStreaming("");
-    setAnkyResponses([]);
     setNewAnkyPrompt(null);
     setKeystrokes("");
     setAnkyResponseReady(false);
@@ -400,10 +392,7 @@ const WritingGame = () => {
               autoCorrect={false}
               ref={textInputRef}
               className={`flex-1 w-full text-2xl font-righteous p-2 ${
-                new Date().getTime() - sessionStartTime.current! >
-                MAX_SESSION_DURATION
-                  ? `bg-green-400 text-white` // green text with semi-transparent green background
-                  : "text-white bg-transparent"
+                changeBackgroundColor ? `bg-green-400 ` : "bg-transparent"
               }`}
               style={{
                 textAlignVertical: "top",
@@ -434,21 +423,16 @@ const WritingGame = () => {
             session_id={writingSessionId}
             session_long_string={sessionLongString}
             onNextStep={async () => {
-              prettyLog(writingSession, "THIS IS THE WRITING SESSION");
               if (writingSession.is_anky) {
-                setIsWritingGameVisible(false);
-                setDidUserWriteToday(true);
                 const ankyverseDay = getCurrentAnkyverseDay();
                 AsyncStorage.setItem(
                   "last_user_wrote",
                   `S${ankyverseDay.currentSojourn}W${ankyverseDay.wink}`
                 );
-                router.push("/(tabs)/anky");
-              } else {
-                resetAllWritingGameState();
-                setPreparingWritingSession(true);
-                setWritingSession(null);
               }
+              resetAllWritingGameState();
+              setPreparingWritingSession(true);
+              setWritingSession(null);
             }}
           />
         );

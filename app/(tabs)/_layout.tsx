@@ -14,7 +14,6 @@ import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import WritingGame from "@/components/Writing_Game";
 import { useAnky } from "@/context/AnkyContext";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Header } from "@react-navigation/elements";
 import { useLoginWithFarcaster, usePrivy } from "@privy-io/expo";
 import { WritingSession } from "@/types/Anky";
@@ -25,35 +24,15 @@ import Playground from "@/assets/icons/playground.svg";
 import Scroll from "@/assets/icons/scroll.svg";
 import CreateAccountModal from "@/components/Profile/CreateAccountModal";
 import { useUser } from "@/context/UserContext";
+import { ModalWrapper } from "@/components/modal/ModalWrapper";
 
 export default function TabLayout() {
-  const { user } = usePrivy();
-  const { loginWithFarcaster, state } = useLoginWithFarcaster({
-    onSuccess: (user, isNewUser) => {
-    },
-    onError: (error) => {
-    },
-  });
   const colorScheme = useColorScheme();
-  const {
-    isWritingGameVisible,
-    setIsWritingGameVisible,
-    didUserWriteToday,
-    isUserWriting,
-  } = useAnky();
+  const { isWritingGameVisible, setIsWritingGameVisible, isUserWriting } =
+    useAnky();
   const { createAccountModalVisible, setCreateAccountModalVisible } = useUser();
 
-  const [writingSession, setWritingSession] = useState<
-    WritingSession | undefined
-  >(undefined);
-
   const ankyverseDay = getCurrentAnkyverseDay();
-
-  const handleProfilePress = () => {
-    if (!user) {
-      loginWithFarcaster({ relyingParty: "https://www.anky.bot" });
-    }
-  };
 
   return (
     <View className="flex-1 w-full bg-white relative">
@@ -126,6 +105,7 @@ export default function TabLayout() {
               <TabBarIcon
                 name={focused ? "pencil" : "pencil-outline"}
                 color={color}
+                size={1}
               />
             ),
           }}
@@ -173,22 +153,7 @@ export default function TabLayout() {
         />
       </Tabs>
 
-      {isWritingGameVisible && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            zIndex: 10,
-          }}
-        >
-          <WritingGame />
-        </View>
-      )}
-
-      {!isUserWriting && didUserWriteToday && (
+      {!isUserWriting && (
         <View
           style={{
             position: "absolute",
@@ -230,10 +195,31 @@ export default function TabLayout() {
           </TouchableOpacity>
         </View>
       )}
-      <CreateAccountModal
+
+      {isWritingGameVisible && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: 10,
+          }}
+        >
+          <WritingGame />
+        </View>
+      )}
+
+      <ModalWrapper
         isVisible={createAccountModalVisible}
         onClose={() => setCreateAccountModalVisible(false)}
-      />
+      >
+        <CreateAccountModal
+          isVisible={createAccountModalVisible}
+          onClose={() => setCreateAccountModalVisible(false)}
+        />
+      </ModalWrapper>
     </View>
   );
 }

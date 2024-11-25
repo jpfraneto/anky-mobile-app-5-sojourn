@@ -3,6 +3,7 @@ import axios from "axios";
 import { User as PrivyUser } from "@privy-io/expo";
 import { prettyLog } from "./logs";
 import { Anky, WritingSession } from "@/types/Anky";
+import { getAllUserWrittenAnkysFromLocalStorage } from "./anky";
 
 // Function to send writing to Anky and process the response
 

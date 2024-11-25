@@ -3,11 +3,11 @@ import {
   Pressable,
   View,
   Text,
-  Modal,
   TextInput,
   Linking,
   Platform,
   Animated,
+  Image,
 } from "react-native";
 import * as Clipboard from "expo-clipboard";
 import {
@@ -31,16 +31,18 @@ import { AnkyUser } from "@/types/User";
 import { getAnkyUserLastWritingSession } from "@/utils/writingGame";
 import { shareAnkyWritingSessionAsCast } from "@/api/farcaster";
 import { sendNewUserToPoiesis } from "@/api";
-import { checkIfUserHasWrittenAnAnky } from "@/utils/anky";
 import { useAnky } from "@/context/AnkyContext";
+import { router } from "expo-router";
+import { getAllUserWrittenAnkysFromLocalStorage } from "@/utils/anky";
 
 type Props = {
   isVisible: boolean;
   onClose: () => void;
 };
 
-export default function CreateAccountModal({ isVisible, onClose }: Props) {
+export default function Modal({ isVisible, onClose }: Props) {
   const [step, setStep] = useState(1);
+  const [userCanCreateAccount, setUserCanCreateAccount] = useState(false);
   const [email, setEmail] = useState("");
   const [pinCode, setPinCode] = useState("");
   const [error, setError] = useState("");
@@ -49,8 +51,7 @@ export default function CreateAccountModal({ isVisible, onClose }: Props) {
     useState(false);
 
   const { setIsWritingGameVisible } = useAnky();
-
-  const { ankyUser, setCreateAccountModalVisible } = useUser();
+  const { ankyUser } = useUser();
   const wallet = useEmbeddedWallet();
   const { user, isReady, logout } = usePrivy();
   const { getIdentityToken } = useIdentityToken();
@@ -73,53 +74,35 @@ export default function CreateAccountModal({ isVisible, onClose }: Props) {
   });
 
   useEffect(() => {
-    userSetup();
+    if (user && isReady) {
+      userSetup();
+    }
   }, [user]);
 
   const userSetup = async () => {
     try {
-      console.log("🔍 Checking user setup state", { user, ankyUser, step });
+      console.log("in here", user, ankyUser);
+      const user_ankys = await getAllUserWrittenAnkysFromLocalStorage();
+      prettyLog(user_ankys, "the user ankys are");
 
-      const hasUserWrittenAnAnky = await checkIfUserHasWrittenAnAnky();
-      if (!hasUserWrittenAnAnky) {
-        // if the user has not written an anky
-        console.log("👤 User has not written an anky, starting from step 0");
-        setStep(0);
-        return;
-      }
-      if (user && isReady) {
-        // If we have a user but no anky user, start from step 1
-        if (!ankyUser) {
-          console.log("👤 No anky user found, starting from step 1");
-          setStep(1);
-          return;
+      if (user_ankys.length > 0) {
+        setUserCanCreateAccount(true);
+        if (user && ankyUser) {
+          console.log("asdailsa");
+          if (isNotCreated(wallet)) {
+            console.log("creating the wallet");
+            await wallet.create({ recoveryMethod: "privy" });
+          }
+          const idToken = await getIdentityToken();
+
+          console.log("access token", idToken);
+          if (idToken) {
+            await sendNewUserToPoiesis(user, ankyUser, idToken);
+          }
         }
-
-        // Create wallet if needed
-        if (isNotCreated(wallet)) {
-          console.log("💰 Creating embedded wallet...");
-          await wallet.create({ recoveryMethod: "privy" });
-          console.log("✅ Wallet created successfully!");
-        }
-
-        // Get identity token and send user data
-        const idToken = await getIdentityToken();
-        if (idToken) {
-          console.log("🔑 Got identity token, sending user data to Poiesis...");
-          await sendNewUserToPoiesis(user, ankyUser, idToken);
-          console.log("✨ User data sent successfully!");
-        }
-
-        // Move to step 3 if we have both user and anky user
-        console.log("🎯 Moving to step 3");
-        setStep(3);
-      } else {
-        console.log("🔄 No user/not ready, resetting to step 1");
-        setStep(1);
       }
     } catch (error) {
-      console.error("❌ Error in user setup:", error);
-      setError("Failed to setup user account");
+      console.log("error in user setup", error);
     }
   };
 
@@ -179,28 +162,9 @@ export default function CreateAccountModal({ isVisible, onClose }: Props) {
     switch (step) {
       case 0:
         return (
-          <View className="space-y-6 p-4 mt-4">
-            <Text className="text-2xl text-purple-600 font-bold text-center">
-              Your First Anky Awaits
-            </Text>
-            <Text className="text-purple-400 text-center text-lg">
-              Take an 8-minute journey into your consciousness through writing.
-              Let your thoughts flow freely and discover what emerges.
-            </Text>
-            <Text className="text-purple-500 text-center italic">
-              "The first step of any journey is always the most meaningful one."
-            </Text>
-            <Pressable
-              onPress={() => {
-                setCreateAccountModalVisible(false);
-                setIsWritingGameVisible(true);
-              }}
-              className="bg-purple-600 px-8 py-4 rounded-xl border border-purple-400 active:bg-purple-700 mt-4"
-            >
-              <Text className="text-white text-xl font-bold text-center">
-                Begin Writing Journey
-              </Text>
-            </Pressable>
+          <View className="flex-1 justify-center">
+            <Text>to create an account you need to write your first anky</Text>
+            <Text>8 minutes of pure stream of consiousness writing</Text>
           </View>
         );
       case 1:
@@ -245,9 +209,6 @@ export default function CreateAccountModal({ isVisible, onClose }: Props) {
                   privacy policy
                 </Text>
               </Text>
-              <Text className="text-center text-sm text-purple-800">
-                important: use an anonymous email
-              </Text>
 
               {/^[a-zA-Z0-9._%\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(
                 email
@@ -272,16 +233,16 @@ export default function CreateAccountModal({ isVisible, onClose }: Props) {
 
       case 2:
         return (
-          <View className="space-y-6 mt-4 w-full">
+          <View className="space-y-6 mt-4">
             <Text className="text-center font-bold text-lg text-purple-800">
               Enter the magic code sent to:
             </Text>
             <Text className="text-center text-pink-600 font-bold text-xl">
               {email}
             </Text>
-            <View className="flex-row w-full  items-center space-x-2">
+            <View className="flex-row items-center space-x-2">
               <TextInput
-                className="flex-1 border-2 border-purple-400 rounded-2xl p-4 bg-purple-100/30 text-purple-900 text-center text-xl w-full"
+                className="flex-1 border-2 border-purple-400 rounded-2xl p-4 bg-purple-100/30 text-purple-900 text-center text-xl"
                 placeholder="Enter 6-digit code"
                 value={pinCode}
                 onChangeText={setPinCode}
@@ -351,8 +312,12 @@ export default function CreateAccountModal({ isVisible, onClose }: Props) {
       case 3:
         console.log("Rendering step 3");
         return (
-          <View className="space-y-6 relative mt-4 w-full">
-            <View className="space-y-6 w-full">
+          <View className="space-y-6 relative mt-4">
+            <View className="space-y-6">
+              <Image
+                source={require("@/assets/images/elmasmejor.png")}
+                className="w-full h-48"
+              />
               <Pressable
                 disabled={loadingFarcasterAccountCreation}
                 className="bg-gradient-to-r from-purple-500 via-pink-500 to-purple-500 py-4 rounded-2xl active:scale-95 transform transition-all duration-200 shadow-xl"
@@ -577,6 +542,19 @@ export default function CreateAccountModal({ isVisible, onClose }: Props) {
                   {error}
                 </Text>
               )}
+              {error.includes("8 minutes") && (
+                <Pressable
+                  className="mt-8"
+                  onPress={() => {
+                    router.back();
+                    setIsWritingGameVisible(true);
+                  }}
+                >
+                  <Text className="text-center text-purple-500 font-bold">
+                    write
+                  </Text>
+                </Pressable>
+              )}
               {/* <View className="flex-row justify-center space-x-4 mt-96">
                 <Pressable
                   onPress={() => {
@@ -608,20 +586,19 @@ export default function CreateAccountModal({ isVisible, onClose }: Props) {
   };
   console.log("rendering the modal ", isVisible);
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={isVisible}
-      statusBarTranslucent={true}
-      onRequestClose={onClose}
-      presentationStyle="overFullScreen"
+    <View
       style={{
         justifyContent: "center",
         alignItems: "center",
         margin: 0,
       }}
     >
-      <Pressable
+      <View className="absolute top-0 left-0 w-full h-16 bg-white">
+        <Text className="text-black text-2xl font-bold">Welcome</Text>
+      </View>
+      <View className="flex-1 w-full bg-white">{renderStep()}</View>
+
+      {/* <Pressable
         onPress={onClose}
         className="flex-1"
         style={{
@@ -639,11 +616,11 @@ export default function CreateAccountModal({ isVisible, onClose }: Props) {
           }}
         >
           <View style={{ height: "40%" }} className="flex-col space-y-6 ">
-            {renderStep()}
+           
           </View>
         </Pressable>
-      </Pressable>
-    </Modal>
+      </Pressable> */}
+    </View>
   );
 }
 

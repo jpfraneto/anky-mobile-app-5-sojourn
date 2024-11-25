@@ -14,10 +14,8 @@ import {
   StatusBar,
 } from "react-native";
 import { useAnky } from "@/context/AnkyContext";
-import {
-  extractSessionDataFromLongString,
-  sendWritingSessionConversationToAnky,
-} from "@/utils/anky";
+import { extractSessionDataFromLongString } from "@/utils/anky";
+import { sendWritingConversationToAnky } from "@/api/anky";
 
 interface Message {
   id: number;
@@ -81,7 +79,7 @@ const AnkyverseDialog = () => {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     setIsAnkyTyping(false);
 
-    const ankyResponse = await sendWritingSessionConversationToAnky(
+    const ankyResponse = await sendWritingConversationToAnky(
       conversationWithAnky
     );
     setConversationWithAnky((prev) => [...prev, ankyResponse]);

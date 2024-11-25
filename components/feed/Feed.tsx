@@ -103,7 +103,8 @@ const Feed: React.FC<FeedProps> = ({
       maxToRenderPerBatch={5}
       windowSize={5}
       removeClippedSubviews={true}
-      className="flex-1"
+      className="flex-1 px-2" // Add padding here
+      contentContainerStyle={{ alignItems: "center" }} // Add this line to center content
     />
   );
 };

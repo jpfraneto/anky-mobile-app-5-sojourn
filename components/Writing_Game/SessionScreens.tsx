@@ -164,7 +164,6 @@ export const SessionEndScreen: React.FC<{
       {sessionData.total_time_written < EXPO_PUBLIC_SESSION_TARGET_TIME && (
         <TouchableOpacity
           onPress={onNextStep}
-          //onPress={funFunction}
           className="w-full flex-row items-center justify-center bg-white rounded-xl py-4 mb-4 mt-4"
         >
           <MaterialCommunityIcons name="reload" size={24} color="black" />

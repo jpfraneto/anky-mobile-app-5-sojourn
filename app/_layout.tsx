@@ -36,6 +36,9 @@ import {
 SplashScreen.preventAutoHideAsync();
 
 // Global objects
+export const unstable_settings = {
+  initialRouteName: "index",
+};
 
 const queryClient = new QueryClient();
 
@@ -80,6 +83,15 @@ export default function RootLayout() {
                   <Stack.Screen
                     name="+not-found"
                     options={{ headerShown: false }}
+                  />
+
+                  <Stack.Screen
+                    name="settings"
+                    options={{
+                      presentation: "modal",
+                      animation: "fade",
+                      headerShown: false,
+                    }}
                   />
                 </Stack>
               </View>

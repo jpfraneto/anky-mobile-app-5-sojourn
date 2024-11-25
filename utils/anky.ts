@@ -2,22 +2,6 @@ import { sendWritingConversationToAnky } from "@/api/anky";
 import { prettyLog } from "@/utils/logs";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-export async function sendWritingSessionConversationToAnky(
-  conversation_so_far: string[]
-): Promise<string> {
-  try {
-    prettyLog(conversation_so_far, "the conversation so far is");
-
-    const new_prompt = await sendWritingConversationToAnky(conversation_so_far);
-    prettyLog(new_prompt, "the anky response is NEW PROMPT:");
-
-    return new_prompt;
-  } catch (error) {
-    console.error("Error processing writing session:", error);
-    throw error;
-  }
-}
-
 export function extractSessionDataFromLongString(session_long_string: string): {
   user_id: string;
   session_id: string;
@@ -117,4 +101,9 @@ export async function updateAllUserWrittenAnkysOnLocalStorage(
     "all_user_written_ankys",
     JSON.stringify(newAnkys)
   );
+}
+
+export async function checkIfUserHasWrittenAnAnky(): Promise<boolean> {
+  const total_ankys = await getAllUserWrittenAnkysFromLocalStorage();
+  return total_ankys.length > 0 ? true : false;
 }

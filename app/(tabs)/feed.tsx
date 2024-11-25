@@ -15,6 +15,7 @@ export default function HomeScreen() {
       return getLandingFeed({
         cursor: "",
         limit: activeTab === "all" ? 24 : 12,
+        fid: 16098,
       });
     },
   });
@@ -49,6 +50,7 @@ export default function HomeScreen() {
           await getLandingFeed({
             cursor: cursor,
             limit: activeTab === "all" ? 24 : 12,
+            fid: 16098,
           });
         }}
         isLoading={isLoading}

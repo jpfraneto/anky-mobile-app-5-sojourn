@@ -13,31 +13,49 @@ interface FeedResponse {
 }
 
 interface FeedOptions {
+  viewer_fid?: number;
   cursor?: string;
   limit?: number;
+  fid: number;
 }
 
 // Cache to store already fetched casts to avoid duplicates
 let fetchedCastIds = new Set<string>();
 
 export const getLandingFeed = async ({
+  fid = 18350,
+  viewer_fid = 18350,
   cursor,
   limit = 50,
 }: FeedOptions): Promise<FeedResponse> => {
   try {
     const options = {
       method: "GET",
-      url: `${API_URL}/farcaster/landing-feed`,
+      url: `https://api.neynar.com/v2/farcaster/feed/following`,
       params: {
+        fid: 18350,
         cursor: cursor || undefined,
         with_recasts: true,
-        limit: limit * 2,
+        limit: limit * 2, // Fetch extra to account for non-image posts
       },
       headers: {
         accept: "application/json",
-        "x-api-key": POIESIS_API_KEY!,
+        "x-api-key": process.env.NEYNAR_API_KEY || "NEYNAR_API_DOCS",
       },
     };
+    // const options = {
+    //   method: "GET",
+    //   url: `${API_URL}/farcaster/landing-feed`,
+    //   params: {
+    //     cursor: cursor || undefined,
+    //     with_recasts: true,
+    //     limit: limit * 2,
+    //   },
+    //   headers: {
+    //     accept: "application/json",
+    //     "x-api-key": POIESIS_API_KEY!,
+    //   },
+    // };
 
     const response = await axios.request(options);
 

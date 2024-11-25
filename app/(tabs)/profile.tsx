@@ -30,6 +30,7 @@ import {
   getUserProfile,
 } from "@/api/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Link } from "expo-router";
 
 const ProfileScreen = ({
   setShowWritingGame,
@@ -78,7 +79,13 @@ const ProfileScreen = ({
     enabled: !!fid,
   });
 
-  const BlurredText = ({ text }: { text: string }) => {
+  const BlurredText = ({
+    text,
+    fontSize = 16,
+  }: {
+    text: string;
+    fontSize?: number;
+  }) => {
     const translateY = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
@@ -106,7 +113,7 @@ const ProfileScreen = ({
       <Animated.View style={{ alignSelf: "flex-start" }}>
         <Text
           style={{
-            fontSize: 16,
+            fontSize: fontSize,
             color: "#000",
             opacity: 0.2,
             shadowColor: "#000",
@@ -179,29 +186,18 @@ const ProfileScreen = ({
     <View className="flex-1 bg-white pt-10">
       <View className="items-center p-5">
         <View className="flex flex-row justify-between w-full">
-          <Text className="text-2xl font-bold mr-auto pl-2 mb-2">
-            @{ankyUser?.farcaster_account?.username || "HanumanJi"}
-          </Text>
+          {ankyUser?.farcaster_account?.username ? (
+            <Text className="text-2xl font-bold mr-auto pl-2 mb-2 text-gray-600">
+              @{ankyUser?.farcaster_account?.username}
+            </Text>
+          ) : (
+            <BlurredText text="@ಹನುಮಾನ್" fontSize={22} />
+          )}
 
           <View className="flex flex-row gap-4">
-            <TouchableOpacity
-              onPress={() => {
-                Alert.alert("Settings", "Choose an option", [
-                  {
-                    text: "LOGOUT",
-                    onPress: logout,
-                    style: "destructive",
-                  },
-                  {
-                    text: "Cancel",
-                    style: "cancel",
-                  },
-                ]);
-              }}
-              className="bg-blue-500 rounded-full p-2"
-            >
+            <Link href="/settings" className="bg-blue-500 rounded-full p-2">
               <Ionicons name="settings-outline" size={24} color="white" />
-            </TouchableOpacity>
+            </Link>
 
             <TouchableOpacity
               onPress={() => alert("Share")}
@@ -211,7 +207,6 @@ const ProfileScreen = ({
             </TouchableOpacity>
           </View>
         </View>
-
         <View className="flex flex-row justify-between w-full items-center">
           <View className="relative">
             <Image
@@ -222,6 +217,15 @@ const ProfileScreen = ({
               }}
               className="w-24 h-24 rounded-full mb-2.5"
             />
+            {!ankyUser && (
+              <Pressable
+                onPress={() => setCreateAccountModalVisible(true)}
+                className="absolute inset-0 bg-white rounded-full items-center w-24 h-24 justify-center"
+              >
+                <Ionicons name="log-in-outline" size={32} color="black" />
+                <Text className="text-white text-xs mt-1">Create Account</Text>
+              </Pressable>
+            )}
           </View>
 
           <View className="flex flex-row gap-4 flex-1 px-16 justify-between">
@@ -239,7 +243,6 @@ const ProfileScreen = ({
             </View>
           </View>
         </View>
-
         {userProfile?.display_name ? (
           <Text className="text-left text-2xl mt-2 w-full font-bold mb-1">
             {userProfile?.display_name}
@@ -247,7 +250,6 @@ const ProfileScreen = ({
         ) : (
           <BlurredText text="ಪವನಸುತ" />
         )}
-
         {userProfile?.profile?.bio?.text ? (
           <Text className="text-lg mb-1 w-full text-left">
             {userProfile?.profile?.bio?.text}
@@ -255,22 +257,8 @@ const ProfileScreen = ({
         ) : (
           <BlurredText text="ಜಯ ಶ್ರೀರಾಮ | ಭಕ್ತಿಯುತ ವಾನರ | ರಾಮದೂತ | ಪವನಪುತ್ರ | ಮಹಾವೀರ | ಉಡುಪಿಗೆ ಹೋದರೆ ಪಕ್ಕಾ ನೆಚ್ಚಿನ ದೋಸೆ" />
         )}
-
         <ElementsOfProfile viewMode={viewMode} setViewMode={setViewMode} />
-        {ankyUser?.farcaster_account?.fid ? (
-          renderContent()
-        ) : (
-          <View className="mt-4">
-            <Pressable
-              onPress={() => setCreateAccountModalVisible(true)}
-              className="bg-purple-800/50 px-8 py-4 rounded-2xl border-2 border-purple-300 active:scale-95 active:bg-purple-700/50"
-            >
-              <Text className="text-white text-2xl font-bold text-center">
-                {user ? "invoke your anky" : "login to setup your account"}
-              </Text>
-            </Pressable>
-          </View>
-        )}
+        {renderContent()}
       </View>
     </View>
   );

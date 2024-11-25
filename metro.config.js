@@ -17,7 +17,7 @@ const config = (() => {
     sourceExts: [...resolver.sourceExts, "svg"],
   };
 
-  //   config.isCSSEnabled = true;
+  config.isCSSEnabled = true;
 
   return config;
 })();

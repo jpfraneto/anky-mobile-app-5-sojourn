@@ -8,6 +8,7 @@ import { getAnkyverseDayForGivenTimestamp } from "@/utils/ankyverse";
 import { Cast as CastType } from "@/types/Cast";
 import { Ionicons } from "@expo/vector-icons";
 import { useUser } from "@/context/UserContext";
+import { router } from "expo-router";
 
 const { width } = Dimensions.get("window");
 const IMAGE_SIZE = width - 16; // Full width minus padding
@@ -87,7 +88,7 @@ const Cast: React.FC<CastProps> = ({ cast }) => {
 
       <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)}>
         <Animated.Text
-          className="text-white text-sm"
+          className="text-white text-"
           numberOfLines={isExpanded ? undefined : 3}
           style={[textAnimatedStyle]}
         >
