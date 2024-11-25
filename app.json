@@ -1,21 +1,23 @@
 {
   "expo": {
-    "name": "NewAnky",
-    "slug": "NewAnky",
+    "name": "Anky Verse",
+    "slug": "anky",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "anky",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "bot.anky.app"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "bot.anky.app"
     },
     "web": {
       "bundler": "metro",
@@ -32,10 +34,20 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-localization"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "92dc277a-cd8a-4c9b-851f-9110b2e0219d"
+      }
     }
   }
 }

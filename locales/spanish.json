@@ -1,0 +1,11 @@
+{
+  "landing": {
+    "title": "Titulo",
+    "checking": "Anky revisara si tienes una cuenta automaticamente.",
+    "verifying": "Verificando Credenciales",
+    "login": "Inicia Sesion con tu EMAIL.",
+    "pin": "Recibiras PIN CODE.",
+    "error": "Usa un EMAIL valido!",
+    "send": "Enviar codigo de acceso"
+  }
+}

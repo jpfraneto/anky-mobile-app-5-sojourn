@@ -1,0 +1,11 @@
+{
+  "landing": {
+    "title": "Title",
+    "checking": "Anky will check if you already have an account automatically.",
+    "verifying": "Verifying credentials",
+    "login": "Login with your EMAIL.",
+    "pin": "You will receive a PIN CODE.",
+    "error": "Use valid email!",
+    "send": "Send access code"
+  }
+}

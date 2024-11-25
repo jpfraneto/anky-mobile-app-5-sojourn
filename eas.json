@@ -1,0 +1,49 @@
+{
+  "cli": {
+    "version": ">= 13.3.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "simulator": {
+      "extends": "development",
+      "ios": {
+        "simulator": true
+      }
+    },
+    "preview": {
+      "distribution": "internal",
+      "env": {},
+      "android": {
+        "resourceClass": "large"
+      },
+      "ios": {
+        "resourceClass": "medium"
+      }
+    },
+    "production": {
+      "ios": {
+        "distribution": "store",
+        "env": {},
+        "resourceClass": "medium"
+      },
+      "android": {
+        "env": {},
+        "resourceClass": "large"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "jpfraneto@gmail.com",
+        "ascAppId": "6738397257",
+        "appleTeamId": "84V63LKV45",
+        "language": "en-US"
+      }
+    }
+  }
+}
