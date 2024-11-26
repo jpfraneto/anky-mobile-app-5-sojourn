@@ -27,7 +27,7 @@ export default function PouchScreen() {
     transactions?.transactions?.reduce((acc, tx) => acc + tx.amount, 0) || 0;
   console.log("the user is: ", user);
   return (
-    <View className="flex-1 bg-purple-900 p-4">
+    <View className="flex-1 bg-purple-400 p-4">
       <View className="mt-12 mb-6">
         <Text className="text-white text-3xl font-bold mb-2">💰</Text>
         <Text className="text-purple-200 text-lg">

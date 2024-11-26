@@ -391,7 +391,7 @@ const WritingGame = () => {
             <TextInput
               autoCorrect={false}
               ref={textInputRef}
-              className={`flex-1 w-full text-2xl font-righteous p-2 ${
+              className={`flex-1 w-full text-2xl text-white font-righteous p-2 ${
                 changeBackgroundColor ? `bg-green-400 ` : "bg-transparent"
               }`}
               style={{

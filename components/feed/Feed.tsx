@@ -19,6 +19,8 @@ const Feed: React.FC<FeedProps> = ({
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreCasts, setHasMoreCasts] = useState(true);
   const flatListRef = useRef<FlatList>(null);
+  console.log("casts", casts);
+  if (casts.length == 0) return null;
 
   useEffect(() => {
     // Reset hasMoreCasts when new casts are loaded
@@ -103,7 +105,7 @@ const Feed: React.FC<FeedProps> = ({
       maxToRenderPerBatch={5}
       windowSize={5}
       removeClippedSubviews={true}
-      className="flex-1 px-2" // Add padding here
+      className="flex-1 " // Add padding here
       contentContainerStyle={{ alignItems: "center" }} // Add this line to center content
     />
   );

@@ -15,13 +15,13 @@ export default function HomeScreen() {
       return getLandingFeed({
         cursor: "",
         limit: activeTab === "all" ? 24 : 12,
-        fid: 16098,
+        fid: 18350,
       });
     },
   });
 
   return (
-    <View className="flex-1 bg-black">
+    <View className="flex-1 bg-black flex-1 flex-col items-center">
       {/* Tab Navigation */}
       <View className="flex-row justify-center space-x-8 pt-16 pb-4">
         {["all", "followed"].map((tab) => (

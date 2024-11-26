@@ -111,20 +111,7 @@ const ProfileScreen = ({
 
     return (
       <Animated.View style={{ alignSelf: "flex-start" }}>
-        <Text
-          style={{
-            fontSize: fontSize,
-            color: "#000",
-            opacity: 0.2,
-            shadowColor: "#000",
-            shadowOffset: { width: 0, height: 0 },
-            shadowOpacity: 0.8,
-            shadowRadius: 8,
-            textAlign: "left",
-          }}
-        >
-          {text}
-        </Text>
+        <Text className="text-black">{text}</Text>
       </Animated.View>
     );
   };
@@ -183,11 +170,11 @@ const ProfileScreen = ({
   };
 
   return (
-    <View className="flex-1 bg-white pt-10">
+    <View className="flex-1 bg-purple-400 pt-10">
       <View className="items-center p-5">
         <View className="flex flex-row justify-between w-full">
           {ankyUser?.farcaster_account?.username ? (
-            <Text className="text-2xl font-bold mr-auto pl-2 mb-2 text-gray-600">
+            <Text className="text-2xl font-bold mr-auto pl-2 mb-2 text-black">
               @{ankyUser?.farcaster_account?.username}
             </Text>
           ) : (
@@ -213,7 +200,7 @@ const ProfileScreen = ({
               source={{
                 uri:
                   ankyUser?.farcaster_account?.pfp_url ||
-                  "https://github.com/jpfraneto/images/blob/main/anky.png?raw=true",
+                  "https://wrpcd.net/cdn-cgi/imagedelivery/BXluQx4ige9GuW0Ia56BHw/2c3250ee-e91d-4e8d-76b1-42d1c6ebef00/anim=false,fit=contain,f=auto,w=336",
               }}
               className="w-24 h-24 rounded-full mb-2.5"
             />
@@ -274,7 +261,7 @@ const ElementsOfProfile = ({
   setViewMode: (viewMode: "ankys" | "drafts" | "collected") => void;
 }) => {
   return (
-    <View className="flex-row mt-2">
+    <View className="flex-row mt-2 ">
       <TouchableOpacity
         className={`border-b-2 ${
           viewMode === "ankys" ? "border-gray-300" : "border-transparent"
