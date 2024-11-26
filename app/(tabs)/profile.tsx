@@ -181,7 +181,7 @@ const ProfileScreen = ({
             <BlurredText text="@ಹನುಮಾನ್" fontSize={22} />
           )}
 
-          <View className="flex flex-row gap-4">
+          {/* <View className="flex flex-row gap-4">
             <Link href="/settings" className="bg-blue-500 rounded-full p-2">
               <Ionicons name="settings-outline" size={24} color="white" />
             </Link>
@@ -192,7 +192,7 @@ const ProfileScreen = ({
             >
               <Ionicons name="share-outline" size={24} color="white" />
             </TouchableOpacity>
-          </View>
+          </View> */}
         </View>
         <View className="flex flex-row justify-between w-full items-center">
           <View className="relative">
@@ -224,7 +224,7 @@ const ProfileScreen = ({
             </View>
             <View className="items-center">
               <Text className="text-3xl font-bold">
-                {collectedAnkys?.length || 1}
+                {ankyUser?.streak || 0}
               </Text>
               <Text className="text-xl text-gray-600">sadhana</Text>
             </View>
@@ -327,7 +327,7 @@ const ElementsOfProfileContent = ({
   return (
     <ScrollView className="flex-1">
       {viewMode === "ankys" && <UserAnkysGrid userAnkys={userAnkys} />}
-      {viewMode === "drafts" && <UserDraftsGrid userDrafts={userDrafts} />}
+      {viewMode === "drafts" && <UserDraftsGrid />}
       {viewMode === "collected" && (
         <UsersCollectedDisplay userCollectedAnkys={userCollectedAnkys} />
       )}

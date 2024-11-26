@@ -2,9 +2,7 @@ import { WritingSession } from "@/types/Anky";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { encodeToAnkyverseLanguage } from "@/utils/ankyverse";
 
-export async function shareAnkyWritingSessionAsCast(
-  writingSession: WritingSession
-) {
+export async function shareAnkyWritingSessionAsCast(writingSession: string) {
   try {
     throw new Error("Not implemented");
     const signer_uuid = await AsyncStorage.getItem("signer_uuid");

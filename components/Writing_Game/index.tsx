@@ -37,6 +37,7 @@ import {
 } from "@/utils/environment";
 import { getLocales } from "expo-localization";
 import { sendWritingConversationToAnky } from "@/api/anky";
+import { storeUserWritingSessionLocally } from "@/utils/writingGame";
 
 const { height } = Dimensions.get("window");
 
@@ -250,6 +251,7 @@ const WritingGame = () => {
       setIsUserWriting(false);
       // setDidUserWriteToday(true);
       prettyLog(sessionLongString, "THE WRITING SESSION LONG STRING IS");
+      await storeUserWritingSessionLocally(writingSessionId, sessionLongString);
 
       setWritingSession({
         ...writingSession,

@@ -43,6 +43,7 @@ export const getLandingFeed = async ({
         "x-api-key": process.env.NEYNAR_API_KEY || "NEYNAR_API_DOCS",
       },
     };
+    prettyLog(options, "✅✅✅✅✅ -- fetching feed with options:");
     // const options = {
     //   method: "GET",
     //   url: `${API_URL}/farcaster/landing-feed`,

@@ -5,7 +5,7 @@ import { Cast as CastType } from "@/types/Cast";
 
 interface FeedProps {
   casts: CastType[];
-  cursor: string;
+  cursor?: string;
   onLoadMore: (cursor: string) => Promise<void>;
   isLoading?: boolean;
 }
@@ -16,52 +16,81 @@ const Feed: React.FC<FeedProps> = ({
   onLoadMore,
   isLoading = false,
 }) => {
+  console.log("Feed component rendering with props:", {
+    casts,
+    cursor,
+    isLoading,
+  });
+
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMoreCasts, setHasMoreCasts] = useState(true);
   const flatListRef = useRef<FlatList>(null);
-  console.log("casts", casts);
-  if (casts.length == 0) return null;
 
   useEffect(() => {
-    // Reset hasMoreCasts when new casts are loaded
-    setHasMoreCasts(casts.length === 25);
+    console.log("useEffect: Updating hasMoreCasts", {
+      castsLength: casts?.length,
+    });
+    setHasMoreCasts(casts?.length === 25);
   }, [casts]);
 
   const handleScroll = useCallback(
     ({ nativeEvent }: { nativeEvent: any }) => {
-      if (isLoadingMore || !hasMoreCasts) return;
+      console.log("handleScroll called", {
+        isLoadingMore,
+        hasMoreCasts,
+        cursor,
+      });
+
+      if (isLoadingMore || !hasMoreCasts || !cursor) {
+        console.log("Scroll handler early return", {
+          isLoadingMore,
+          hasMoreCasts,
+          cursor,
+        });
+        return;
+      }
 
       const { contentOffset, contentSize, layoutMeasurement } = nativeEvent;
       const scrollPosition = contentOffset.y;
       const totalHeight = contentSize.height;
       const scrollViewHeight = layoutMeasurement.height;
 
-      // Calculate scroll percentage
       const scrollPercentage =
         (scrollPosition + scrollViewHeight) / totalHeight;
 
-      // If user has scrolled past 55% and we have a cursor
-      if (scrollPercentage > 0.55 && cursor) {
+      console.log("Scroll metrics:", { scrollPercentage });
+
+      if (scrollPercentage > 0.55) {
+        console.log("Triggering loadMoreCasts");
         loadMoreCasts();
       }
     },
-    [cursor, isLoadingMore, hasMoreCasts]
+    [cursor, isLoadingMore, hasMoreCasts, loadMoreCasts]
   );
 
-  const loadMoreCasts = async () => {
+  const loadMoreCasts = useCallback(async () => {
+    console.log("loadMoreCasts called", { cursor });
+    if (!cursor) return;
+
     try {
       setIsLoadingMore(true);
+      console.log("Calling onLoadMore with cursor:", cursor);
       await onLoadMore(cursor);
     } catch (error) {
       console.error("Error loading more casts:", error);
     } finally {
       setIsLoadingMore(false);
     }
-  };
+  }, [cursor, onLoadMore]);
 
-  const renderCast = ({ item }: { item: CastType }) => <Cast cast={item} />;
+  const renderCast = useCallback(({ item }: { item: CastType }) => {
+    console.log("Rendering cast:", item.hash);
+    return <Cast cast={item} />;
+  }, []);
 
-  const renderFooter = () => {
+  const renderFooter = useCallback(() => {
+    console.log("Rendering footer", { isLoadingMore, hasMoreCasts });
+
     if (isLoadingMore) {
       return (
         <View className="py-4">
@@ -81,15 +110,23 @@ const Feed: React.FC<FeedProps> = ({
     }
 
     return null;
-  };
+  }, [isLoadingMore, hasMoreCasts]);
+
+  if (!casts?.length) {
+    console.log("No casts available, returning null");
+    return null;
+  }
 
   if (isLoading) {
+    console.log("Feed is loading");
     return (
       <View className="flex-1 justify-center items-center">
         <ActivityIndicator size="large" color="#0000ff" />
       </View>
     );
   }
+
+  console.log("Rendering FlatList with casts:", casts.length);
 
   return (
     <FlatList
@@ -105,8 +142,8 @@ const Feed: React.FC<FeedProps> = ({
       maxToRenderPerBatch={5}
       windowSize={5}
       removeClippedSubviews={true}
-      className="flex-1 " // Add padding here
-      contentContainerStyle={{ alignItems: "center" }} // Add this line to center content
+      className="flex-1"
+      contentContainerStyle={{ alignItems: "center" }}
     />
   );
 };

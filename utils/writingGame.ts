@@ -159,16 +159,18 @@ export async function getUserLocalAnkys() {
 }
 
 export async function storeUserWritingSessionLocally(
-  newWritingSession: WritingSession
-): Promise<WritingSession[]> {
+  sessionId: string,
+  sessionLongString: string
+): Promise<string[]> {
   try {
     const existing_sessions = await AsyncStorage.getItem("writing_sessions");
-    const sessions: WritingSession[] = existing_sessions
+    const sessions: string[] = existing_sessions
       ? JSON.parse(existing_sessions)
       : [];
-    sessions.unshift(newWritingSession);
+    sessions.unshift(sessionLongString);
     await AsyncStorage.setItem("writing_sessions", JSON.stringify(sessions));
-    prettyLog(newWritingSession, "NEW WRITING SESSION STORED LOCALLY");
+    await AsyncStorage.setItem(`${sessionId}`, sessionLongString);
+    prettyLog(sessionLongString, "NEW WRITING SESSION STORED LOCALLY");
     return sessions;
   } catch (error) {
     console.error("Error storing writing session:", error);
@@ -176,7 +178,7 @@ export async function storeUserWritingSessionLocally(
   }
 }
 
-export async function getUserLocalWritingSessions(): Promise<WritingSession[]> {
+export async function getUserLocalWritingSessions(): Promise<string[]> {
   try {
     const existing_sessions = await AsyncStorage.getItem(
       "writing_sessions_ids"
@@ -190,12 +192,10 @@ export async function getUserLocalWritingSessions(): Promise<WritingSession[]> {
 
 export async function fetchWritingSessionFromId(
   session_id: string
-): Promise<WritingSession | null> {
+): Promise<string | null> {
   try {
-    const this_writing_session = await AsyncStorage.getItem(
-      `session_${session_id}`
-    );
-    return this_writing_session ? JSON.parse(this_writing_session) : null;
+    const this_writing_session = await AsyncStorage.getItem(`${session_id}`);
+    return this_writing_session ? this_writing_session : null;
   } catch (error) {
     console.error("Error fetching writing session:", error);
     return null;
@@ -212,39 +212,14 @@ export async function getUserLocalCollectedAnkys() {
   }
 }
 
-// export interface WritingSession {
-//   session_id: string | null;
-//   session_index_for_user?: number | null;
-//   user_id?: string | null;
-//   starting_timestamp: Date;
-//   ending_timestamp?: Date | null;
-//   prompt?: string;
-//   writing?: string | null;
-//   words_written?: number | 0;
-//   newen_earned?: number | 0;
-//   time_spent?: number | null; // duration in seconds
-//   is_anky?: boolean | null;
-
-//   parent_anky_id?: string | null;
-//   writing_patterns?: WritingPatterns;
-//   keystroke_data?: KeystrokeEvent[];
-
-//   status?: string | null;
-
-//   anky_id?: string | null;
-//   anky?: Anky | null;
-// }
-
 export async function fetchLocalWritingSessionFromId(
   session_id: string
-): Promise<WritingSession | null> {
-  const this_writing_session = await AsyncStorage.getItem(
-    `session_${session_id}`
-  );
-  return this_writing_session ? JSON.parse(this_writing_session) : null;
+): Promise<string | null> {
+  const this_writing_session = await AsyncStorage.getItem(`${session_id}`);
+  return this_writing_session ? this_writing_session : null;
 }
 
-export async function getAnkyUserLastWritingSession(): Promise<WritingSession | null> {
+export async function getAnkyUserLastWritingSession(): Promise<string | null> {
   const writingSessions = await getUserLocalWritingSessions();
   const last_writing_session_id = writingSessions[writingSessions.length - 1];
   const last_writing_session = await fetchLocalWritingSessionFromId(

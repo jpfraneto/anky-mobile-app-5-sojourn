@@ -164,6 +164,7 @@ export default function TabLayout() {
             justifyContent: "center",
             pointerEvents: "box-none",
             zIndex: 1000,
+            opacity: isWritingGameVisible ? 0.44 : 1,
           }}
         >
           <TouchableOpacity
