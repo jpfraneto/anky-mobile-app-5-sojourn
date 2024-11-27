@@ -11,6 +11,12 @@ npx expo run:ios --device
 and then choose my phone from the list. but you can also run it on the simulator with
 
 ```
+npx expo run
+```
+
+or
+
+```
 npx expo start
 ```
 

@@ -90,6 +90,7 @@ const WritingGame = () => {
   const [keyboardHeight, setKeyboardHeight] = useState(0);
   const [changeBackgroundColor, setChangeBackgroundColor] = useState(false);
   const [ankyResponseReady, setAnkyResponseReady] = useState(false);
+  const [writingSessionIsAnky, setWritingSessionIsAnky] = useState(false);
   const [timeSinceLastKeystroke, setTimeSinceLastKeystroke] = useState(0);
   const [writingSessionId, setWritingSessionId] = useState<string>("");
   const [sessionLongString, setSessionLongString] = useState<string>("");
@@ -263,6 +264,7 @@ const WritingGame = () => {
       prettyLog(elapsedTime, "THE ELAPSED TIME IS");
 
       if (elapsedTime > TARGET_SESSION_DURATION) {
+        setWritingSessionIsAnky(true);
         setWritingSession({
           ...writingSession,
           status: "completed",
@@ -439,6 +441,16 @@ const WritingGame = () => {
         );
     }
   };
+  if (writingSessionIsAnky) {
+    return (
+      <View className="flex-1 bg-black">
+        <Text>
+          congratulations, you just wrote an anky. it will be processed and
+          transformed into a tokenized piece of art. stay tuned.
+        </Text>
+      </View>
+    );
+  }
   if (!ankyUser) {
     return (
       <View className="flex-1 bg-black">
