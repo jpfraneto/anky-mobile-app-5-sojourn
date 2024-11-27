@@ -71,7 +71,12 @@ const AnkyverseDialog = () => {
     if (!userText.trim()) return;
 
     // Add user's stream of consciousness to conversation
-    setConversationWithAnky((prev) => [...prev, userText]);
+    const prev_conversation_with_anky = conversationWithAnky;
+    const thisUserText = userText;
+    const updated_conversation_with_anky = [
+      ...prev_conversation_with_anky,
+      thisUserText,
+    ];
     setUserText("");
 
     // Simulate Anky typing response
@@ -80,9 +85,10 @@ const AnkyverseDialog = () => {
     setIsAnkyTyping(false);
 
     const ankyResponse = await sendWritingConversationToAnky(
-      conversationWithAnky
+      conversationWithAnky,
+      thisUserText
     );
-    setConversationWithAnky((prev) => [...prev, ankyResponse]);
+    setConversationWithAnky(updated_conversation_with_anky);
   };
 
   const renderMessage = ({ item }: { item: Message }) => {

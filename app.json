@@ -10,7 +10,8 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "bot.anky.app"
+      "bundleIdentifier": "bot.anky.app",
+      "buildNumber": "13"
     },
     "android": {
       "adaptiveIcon": {

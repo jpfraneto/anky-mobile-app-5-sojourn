@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { View } from "react-native";
+import { View, Dimensions } from "react-native";
 import { LineChart } from "react-native-chart-kit";
 import { AbstractChartConfig } from "react-native-chart-kit/dist/AbstractChart";
 
@@ -25,8 +25,10 @@ const WritingSessionChart = ({
 }: {
   session_long_string: string;
 }) => {
+  const { width: screenWidth } = Dimensions.get("window");
+
   const parsedData = useMemo((): ParsedData => {
-    const lines = session_long_string.split("\n").slice(4); // Skip metadata lines
+    const lines = session_long_string.split("\n").slice(3); // Skip metadata lines
     const intervals: number[] = [];
     let currentTime = 0;
     const timePoints: number[] = [];
@@ -87,12 +89,23 @@ const WritingSessionChart = ({
     strokeWidth: 1,
   });
 
+  // Calculate dimensions based on screen width
+  const chartWidth = screenWidth * 0.9; // 90% of screen width
+  const chartHeight = chartWidth * 0.6; // Maintain 5:3 aspect ratio
+
   return (
-    <View style={{ backgroundColor: "#1E2B3D", padding: 16, borderRadius: 8 }}>
+    <View
+      style={{
+        backgroundColor: "#1E2B3D",
+        padding: 16,
+        borderRadius: 8,
+        width: chartWidth,
+      }}
+    >
       <LineChart
         data={chartData}
-        width={350}
-        height={220}
+        width={chartWidth}
+        height={chartHeight}
         chartConfig={chartConfig}
         bezier
         style={{

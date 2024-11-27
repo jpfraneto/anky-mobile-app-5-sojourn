@@ -249,9 +249,8 @@ const WritingGame = () => {
         await processKeystrokeQueue();
       }
       setIsUserWriting(false);
-      // setDidUserWriteToday(true);
       prettyLog(sessionLongString, "THE WRITING SESSION LONG STRING IS");
-      await storeUserWritingSessionLocally(writingSessionId, sessionLongString);
+      await storeUserWritingSessionLocally(sessionLongString);
 
       setWritingSession({
         ...writingSession,
@@ -270,18 +269,18 @@ const WritingGame = () => {
           is_anky: true,
         } as WritingSession);
         const new_user_ankys = await updateAllUserWrittenAnkysOnLocalStorage(
-          writingSession?.session_id!
+          sessionLongString
         );
         prettyLog(new_user_ankys, "THE NEW USER ANKYS ARE");
       }
       const newConversation = [...conversationWithAnky, sessionLongString];
       setConversationWithAnky(newConversation);
       const anky_new_prompt = await sendWritingConversationToAnky(
-        newConversation
+        newConversation,
+        sessionLongString
       );
       console.log("setting the async storage with the new prompt");
       AsyncStorage.setItem("upcoming_prompt", anky_new_prompt);
-      setChangeBackgroundColor(true);
     } catch (error) {
       console.error("Error in handleSessionEnded:", error);
       throw error;

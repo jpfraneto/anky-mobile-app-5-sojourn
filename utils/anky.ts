@@ -77,30 +77,44 @@ export function extractSessionDataFromLongString(session_long_string: string): {
   return result;
 }
 
-export async function getAllUserWrittenAnkysFromLocalStorage(): Promise<
-  string[]
-> {
+export async function getAllUserWrittenSessionsFromLocalStorage(): Promise<string> {
   try {
+    const allUserWrittenSessions = await AsyncStorage.getItem(
+      "all_user_written_sessions"
+    );
+    if (!allUserWrittenSessions) return "";
+    return allUserWrittenSessions;
+  } catch (error) {
+    console.error("Error getting all user written sessions:", error);
+    return "";
+  }
+}
+
+export async function getAllUserWrittenAnkysFromLocalStorage(): Promise<string> {
+  try {
+    const allUserWrittenSessions =
+      await getAllUserWrittenSessionsFromLocalStorage();
+    const formattedAllUserWrittenSessions = allUserWrittenSessions.split("\n");
+
     const allUserWrittenAnkys = await AsyncStorage.getItem(
       "all_user_written_ankys"
     );
-    if (!allUserWrittenAnkys) return [];
-    return JSON.parse(allUserWrittenAnkys);
+    if (!allUserWrittenAnkys) return "";
+    return allUserWrittenAnkys;
   } catch (error) {
     console.error("Error getting all user written ankys:", error);
-    return [];
+    return "";
   }
 }
 
 export async function updateAllUserWrittenAnkysOnLocalStorage(
   new_writing_session_long_string: string
 ) {
-  const allUserWrittenAnkys = await getAllUserWrittenAnkysFromLocalStorage();
-  const newAnkys = [...allUserWrittenAnkys, new_writing_session_long_string];
-  await AsyncStorage.setItem(
-    "all_user_written_ankys",
-    JSON.stringify(newAnkys)
-  );
+  const allUserWrittenAnkysLongString =
+    await getAllUserWrittenAnkysFromLocalStorage();
+  const this_session_id = new_writing_session_long_string.split("\n")[0];
+  const newAnkys = allUserWrittenAnkysLongString + this_session_id;
+  await AsyncStorage.setItem("all_user_written_ankys", newAnkys);
 }
 
 export async function checkIfUserHasWrittenAnAnky(): Promise<boolean> {

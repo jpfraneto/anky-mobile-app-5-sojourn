@@ -1,16 +1,15 @@
 export interface WritingSession {
   session_id: string | null;
-  session_index_for_user?: number | null;
-  user_id?: string | null;
+  writer_id?: string | null;
+  anky_id?: string | null;
   starting_timestamp?: Date;
-  ending_timestamp?: Date | null;
   prompt?: string;
   writing?: string | null;
   words_written?: number | 0;
   newen_earned?: number | 0;
   is_onboarding?: boolean | null;
 
-  time_spent?: number | null; // duration in seconds
+  total_time_written?: number | null; // duration in seconds
   is_anky?: boolean | null;
 
   parent_anky_id?: string | null;
@@ -18,7 +17,6 @@ export interface WritingSession {
 
   status?: string | null;
 
-  anky_id?: string | null;
   anky?: Anky | null;
 
   session_data?: SessionData;
@@ -41,21 +39,21 @@ export interface Keystroke {
 }
 
 export interface Anky {
-  id: string;
-  user_id: string;
-  writing_session_id: string;
-  prompt: string;
-  anky_reflection: string | null;
-  anky_inquiry: string;
-  image_url: string;
-  image_ipfs_hash: string | null;
+  id?: string;
+  user_id?: string;
+  writing_session_id?: string;
+  prompt?: string;
+  anky_reflection?: string | null;
+  anky_inquiry?: string;
+  image_url?: string;
+  image_ipfs_hash?: string | null;
   status: string | null;
-  cast_hash: string | null;
-  created_at: Date;
-  updated_at: Date;
-  previous_anky_id: string | null;
-  name: string | null;
-  token_address: string | null;
+  cast_hash?: string | null;
+  created_at?: Date;
+  updated_at?: Date;
+  previous_anky_id?: string | null;
+  name?: string | null;
+  token_address?: string | null;
 }
 
 export interface WritingPatterns {

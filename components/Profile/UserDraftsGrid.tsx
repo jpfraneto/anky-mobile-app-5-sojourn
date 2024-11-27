@@ -10,9 +10,11 @@ import {
 import { WritingSession } from "@/types/Anky";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface UserDraftsGridProps {}
+interface UserDraftsGridProps {
+  userDrafts: WritingSession[];
+}
 
-const UserDraftsGrid: React.FC<UserDraftsGridProps> = () => {
+const UserDraftsGrid: React.FC<UserDraftsGridProps> = ({ userDrafts }) => {
   const [drafts, setDrafts] = useState<
     { id: string; text: string; timestamp: number; duration: number }[]
   >([]);

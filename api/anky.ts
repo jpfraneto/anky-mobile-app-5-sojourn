@@ -47,14 +47,15 @@ export const processInitialWritingSessions = async (
 };
 
 export const sendWritingConversationToAnky = async (
-  conversation_so_far: string[]
+  conversation_so_far: string[],
+  session_long_string: string
 ): Promise<string> => {
   try {
     prettyLog(conversation_so_far, "the conversation so far is");
     const endpoint = `${API_URL}/anky/process-writing-conversation`;
     const response = await axios.post(
       endpoint,
-      { conversation_so_far },
+      { conversation_so_far, session_long_string },
       {
         headers: {
           "api-key": POIESIS_API_KEY!,

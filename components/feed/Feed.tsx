@@ -33,6 +33,21 @@ const Feed: React.FC<FeedProps> = ({
     setHasMoreCasts(casts?.length === 25);
   }, [casts]);
 
+  const loadMoreCasts = useCallback(async () => {
+    console.log("loadMoreCasts called", { cursor });
+    if (!cursor) return;
+
+    try {
+      setIsLoadingMore(true);
+      console.log("Calling onLoadMore with cursor:", cursor);
+      await onLoadMore(cursor);
+    } catch (error) {
+      console.error("Error loading more casts:", error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [cursor, onLoadMore]);
+
   const handleScroll = useCallback(
     ({ nativeEvent }: { nativeEvent: any }) => {
       console.log("handleScroll called", {
@@ -67,21 +82,6 @@ const Feed: React.FC<FeedProps> = ({
     },
     [cursor, isLoadingMore, hasMoreCasts, loadMoreCasts]
   );
-
-  const loadMoreCasts = useCallback(async () => {
-    console.log("loadMoreCasts called", { cursor });
-    if (!cursor) return;
-
-    try {
-      setIsLoadingMore(true);
-      console.log("Calling onLoadMore with cursor:", cursor);
-      await onLoadMore(cursor);
-    } catch (error) {
-      console.error("Error loading more casts:", error);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [cursor, onLoadMore]);
 
   const renderCast = useCallback(({ item }: { item: CastType }) => {
     console.log("Rendering cast:", item.hash);

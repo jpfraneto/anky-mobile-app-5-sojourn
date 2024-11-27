@@ -23,8 +23,23 @@ export default function PouchScreen() {
     },
   });
 
+  const dummyTransaction = ankyUser?.farcaster_account?.fid
+    ? [
+        {
+          hash: "dummy-tx",
+          amount: 2520,
+          timestamp: new Date().toISOString(),
+        },
+      ]
+    : [];
+
+  const allTransactions = [
+    ...dummyTransaction,
+    ...(transactions?.transactions || []),
+  ];
+
   const totalNewen =
-    transactions?.transactions?.reduce((acc, tx) => acc + tx.amount, 0) || 0;
+    allTransactions.reduce((acc, tx) => acc + tx.amount, 0) || 0;
   console.log("the user is: ", user);
   return (
     <View className="flex-1 bg-purple-400 p-4">
@@ -43,8 +58,7 @@ export default function PouchScreen() {
         </View>
       ) : (
         <ScrollView className="flex-1">
-          {!transactions?.transactions ||
-          transactions.transactions.length === 0 ? (
+          {!allTransactions || allTransactions.length === 0 ? (
             <View className="flex-1 bg-purple-800/30 rounded-2xl p-6 items-center">
               <NewenIcon width={90} height={90} className="mb-4 opacity-50" />
               <Text className="text-purple-200 text-lg text-center">
@@ -53,7 +67,7 @@ export default function PouchScreen() {
               </Text>
             </View>
           ) : (
-            transactions.transactions.map((transaction) => (
+            allTransactions.map((transaction) => (
               <View
                 key={transaction.hash}
                 className="bg-purple-800/30 p-4 rounded-xl mb-3 flex-row items-center border border-purple-700/50"

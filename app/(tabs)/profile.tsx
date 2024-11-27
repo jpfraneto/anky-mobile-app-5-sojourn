@@ -31,6 +31,8 @@ import {
 } from "@/api/user";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link } from "expo-router";
+import { extractSessionDataFromLongString } from "@/utils/anky";
+import { useAnky } from "@/context/AnkyContext";
 
 const ProfileScreen = ({
   setShowWritingGame,
@@ -38,12 +40,73 @@ const ProfileScreen = ({
   setShowWritingGame: (show: boolean) => void;
 }) => {
   const { user } = usePrivy();
+  let userAnkys: Anky[] = [];
+  let userDrafts: WritingSession[] = [];
   const { ankyUser, setCreateAccountModalVisible } = useUser();
   const fid = ankyUser?.farcaster_account?.fid || 18350;
   const [viewMode, setViewMode] = useState<"ankys" | "drafts" | "collected">(
     "ankys"
   );
   const { logout } = usePrivy();
+  const [writingSessions, setWritingSessions] = useState<WritingSession[]>([]);
+
+  useEffect(() => {
+    const loadWritingSessions = async () => {
+      try {
+        const sessionsIdsString = await AsyncStorage.getItem(
+          "all_user_writing_sessions"
+        );
+        if (!sessionsIdsString) return [];
+        const sessionIds = sessionsIdsString.split("\n");
+        if (sessionIds) {
+          for (const sessionId of sessionIds) {
+            const session = await AsyncStorage.getItem(`${sessionId}.txt`);
+            if (!session) continue;
+            const splittedSession = session?.split("\n");
+            const writingSessionStats =
+              extractSessionDataFromLongString(session);
+            const formattedSession = {
+              session_id: splittedSession?.[0],
+              writer_id: splittedSession?.[1],
+              prompt: splittedSession?.[2],
+              starting_timestamp: new Date(splittedSession?.[3]),
+              writing: writingSessionStats.session_text,
+              total_time_written: writingSessionStats.total_time_written,
+              word_count: writingSessionStats.word_count,
+              average_wpm: writingSessionStats.average_wpm,
+              anky_id: splittedSession[splittedSession.length - 1],
+            };
+            if (formattedSession.total_time_written >= 480) {
+              const thisSessionsAnkyString = await AsyncStorage.getItem(
+                formattedSession.anky_id
+              );
+              if (thisSessionsAnkyString) {
+                let thisSessionsAnky = thisSessionsAnkyString?.split("\n");
+                const formattedAnky = {
+                  anky_id: thisSessionsAnky[0],
+                  image_url:
+                    "https://wrpcd.net/cdn-cgi/imagedelivery/BXluQx4ige9GuW0Ia56BHw/2c3250ee-e91d-4e8d-76b1-42d1c6ebef00/anim=false,fit=contain,f=auto,w=336",
+                  prompt: thisSessionsAnky[1],
+                  anky_response: thisSessionsAnky[2],
+                  status: thisSessionsAnky[3], // status
+                };
+                userAnkys = [...userAnkys, formattedAnky];
+              }
+            } else {
+              userDrafts = [...userDrafts, formattedSession];
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading writing sessions:", error);
+      }
+    };
+
+    loadWritingSessions();
+  }, []);
+
+  const ankys = userAnkys;
+  const drafts = userDrafts;
 
   const {
     data: userProfile,
@@ -59,18 +122,6 @@ const ProfileScreen = ({
     enabled: !!fid,
     retry: 2,
     staleTime: 5 * 60 * 1000,
-  });
-
-  const { data: userAnkys, isLoading: ankysLoading } = useQuery({
-    queryKey: ["userAnkys", fid],
-    queryFn: () => getUserAnkys(fid.toString()),
-    enabled: !!fid,
-  });
-
-  const { data: userDrafts, isLoading: draftsLoading } = useQuery({
-    queryKey: ["userDrafts", fid],
-    queryFn: () => getUserDrafts(fid.toString()),
-    enabled: !!fid,
   });
 
   const { data: collectedAnkys, isLoading: collectedLoading } = useQuery({
@@ -139,21 +190,13 @@ const ProfileScreen = ({
       case "ankys":
         return (
           <View className="flex-1 p-4">
-            {ankysLoading ? (
-              <Text>Loading ankys...</Text>
-            ) : (
-              <Text>Ankys content here</Text>
-            )}
+            <UserAnkysGrid userAnkys={userAnkys} />
           </View>
         );
       case "drafts":
         return (
           <View className="flex-1 p-4">
-            {draftsLoading ? (
-              <Text>Loading drafts...</Text>
-            ) : (
-              <Text>Drafts content here</Text>
-            )}
+            <UserDraftsGrid userDrafts={userDrafts} />
           </View>
         );
       case "collected":
@@ -162,7 +205,9 @@ const ProfileScreen = ({
             {collectedLoading ? (
               <Text>Loading collected ankys...</Text>
             ) : (
-              <Text>Collected content here</Text>
+              <UsersCollectedDisplay
+                userCollectedAnkys={collectedAnkys || []}
+              />
             )}
           </View>
         );
@@ -217,9 +262,7 @@ const ProfileScreen = ({
 
           <View className="flex flex-row gap-4 flex-1 px-16 justify-between">
             <View className="items-center">
-              <Text className="text-3xl font-bold">
-                {userAnkys?.length || 0}
-              </Text>
+              <Text className="text-3xl font-bold">{ankys.length}</Text>
               <Text className="text-xl text-gray-600">ankys</Text>
             </View>
             <View className="items-center">
@@ -310,27 +353,5 @@ const ElementsOfProfile = ({
         </Text>
       </TouchableOpacity>
     </View>
-  );
-};
-
-const ElementsOfProfileContent = ({
-  viewMode,
-  userAnkys,
-  userDrafts,
-  userCollectedAnkys,
-}: {
-  viewMode: "ankys" | "drafts" | "collected";
-  userAnkys: Anky[];
-  userDrafts: WritingSession[];
-  userCollectedAnkys: Anky[];
-}) => {
-  return (
-    <ScrollView className="flex-1">
-      {viewMode === "ankys" && <UserAnkysGrid userAnkys={userAnkys} />}
-      {viewMode === "drafts" && <UserDraftsGrid />}
-      {viewMode === "collected" && (
-        <UsersCollectedDisplay userCollectedAnkys={userCollectedAnkys} />
-      )}
-    </ScrollView>
   );
 };
